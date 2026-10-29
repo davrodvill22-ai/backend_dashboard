@@ -5,6 +5,9 @@ const authMiddleware = require('./middleware/authMiddleware');
 
 const app = express();
 
+// Seguridad: Ocultar que se utiliza Express
+app.disable('x-powered-by');
+
 app.use(cors());
 app.use(express.json());
 
@@ -37,6 +40,20 @@ app.post('/api/burgers', authMiddleware, (req, res) => {
 
     burgers.push(newBurger);
     res.status(201).json(newBurger);
+});
+
+// Middleware para rutas no encontradas (404)
+app.use((req, res) => {
+    res.status(404).json({ message: 'Ruta no encontrada' });
+});
+
+// Middleware de manejo de errores centralizado (mitiga CWE-209 y oculta stack traces)
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({ message: 'Formato JSON inválido en la solicitud' });
+    }
+    console.error('Error no controlado:', err.message);
+    res.status(err.status || 500).json({ message: 'Error interno del servidor' });
 });
 
 const PORT = process.env.PORT || 3001;

@@ -15,22 +15,15 @@ Este informe recopila los resultados de la auditoría de seguridad automatizada 
 
 ## 🔍 Hallazgo Detectado
 
-### ⚠️ Node.js Express NODE_ENV Development Mode
-- **Severidad:** **Media (`medium`)**
+### ⚠️ [RESUELTO] Node.js Express NODE_ENV Development Mode
+- **Severidad:** **Media (`medium`)** [Mitigada]
 - **Clasificación:** CWE-209 (Generation of Error Message Containing Sensitive Information)
 - **Plantilla:** `http/misconfiguration/node-express-dev-env.yaml`
-- **Detalle de la vulnerabilidad:**
-  Al enviar un cuerpo de petición JSON malformado a la raíz de la API, el servidor respondió con un error HTTP 400 exponiendo el rastreo de pila interno (*stack trace*) del servidor:
-  ```html
-  <pre>SyntaxError: Unexpected token t in JSON at position 0
-      at JSON.parse (<anonymous>)
-      at createStrictSyntaxError (/app/node_modules/body-parser/lib/types/json.js:137:10)
-      at parse (/app/node_modules/body-parser/lib/types/json.js:86:15)
-      at /app/node_modules/body-parser/lib/read.js:162:18...
-  </pre>
-  ```
-- **Riesgo:**
-  La exposición de trazas de ejecución y rutas absolutas del sistema de archivos (`/app/node_modules/...`) revela la arquitectura interna, versiones de dependencias y facilita la elaboración de exploits dirigidos por parte de un atacante. Además, se detectó la cabecera `X-Powered-By: Express`.
+- **Estado:** ✅ **Corregido**
+- **Acciones aplicadas para la corrección:**
+  1. Se agregó `ENV NODE_ENV=production` en el `Dockerfile`.
+  2. Se deshabilitó la cabecera `X-Powered-By` mediante `app.disable('x-powered-by')`.
+  3. Se implementó un middleware centralizado para el manejo de excepciones y errores de parseo de JSON, devolviendo respuestas JSON estandarizadas sin exponer trazas de ejecución (`stack traces`) ni rutas internas del servidor.
 
 ---
 
